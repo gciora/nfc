@@ -6,7 +6,8 @@
 #include "dispozitiv.h"
 #include "nfc.h"
 
-class Initializare {
+class Initializare 
+{
    public:
       void begin(void);  // configure everything and start processes
 };

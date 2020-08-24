@@ -2,12 +2,16 @@
 
 Dispozitiv dispozitiv;
 
-void Dispozitiv::begin(void) {
+void Dispozitiv::begin(void) 
+{
    stare.set(WAIT_CONFIG);
 }
 
-void Dispozitiv::run(void) { // this is the actual stare machine of the application
-   switch (stare.get()) {
+void Dispozitiv::run(void) 
+{ 
+   // this is the actual stare machine of the application
+   switch (stare.get()) 
+   {
       case WAIT_CONFIG:
          //DEBUG_PRINTLN("Astept Configurare");
          break;
@@ -26,21 +30,24 @@ void Dispozitiv::run(void) { // this is the actual stare machine of the applicat
    }
 }
 
-bool Dispozitiv::isRunning(void) {
+bool Dispozitiv::isRunning(void) 
+{
    return RUNNING == stare.get();
 }
 
-void Dispozitiv::configurareNeprimita(void) {
-   if(WAIT_CONFIG == stare.get()) {
+void Dispozitiv::configurareNeprimita(void) 
+{
+   if(WAIT_CONFIG == stare.get()) 
       stare.set(RUNNING);
-   }
 };
 
-void Dispozitiv::configurarePrimita(const unsigned char buffer[], size_t length) {
+void Dispozitiv::configurarePrimita(const unsigned char buffer[], size_t length) 
+{
    stare.set(CONFIGURING);
    nfc.save_new_key(buffer, length); // save received key
 }
 
-void Dispozitiv::configurareTerminata(void) {
+void Dispozitiv::configurareTerminata(void) 
+{
    stare.set(RUNNING);
 }

@@ -4,7 +4,8 @@
 #include "stari-mgmt.h"
 #include "nfc.h"
 
-class Dispozitiv {
+class Dispozitiv 
+{
     public:
         void begin(void);
         void run(void);

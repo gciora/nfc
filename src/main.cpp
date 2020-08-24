@@ -6,15 +6,18 @@
 #include "debug.h"
 #include "initializare.h"
 
-BLYNK_CONNECTED() {
+BLYNK_CONNECTED() 
+{
    Blynk.syncAll();
 }
 
-void setup() {
+void setup() 
+{
    deviceInitializare.begin();
 }
 
-void loop() {
+void loop() 
+{
    Blynk.run();
    blynk_timer.run();
 }
