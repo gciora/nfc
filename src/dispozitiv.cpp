@@ -30,17 +30,17 @@ bool Dispozitiv::isRunning(void) {
    return RUNNING == stare.get();
 }
 
-void Dispozitiv::configurareNePrimita(void) {
+void Dispozitiv::configurareNeprimita(void) {
    if(WAIT_CONFIG == stare.get()) {
       stare.set(RUNNING);
    }
 };
 
-void Dispozitiv::primitConfigurare(const unsigned char buffer[], size_t length) {
+void Dispozitiv::configurarePrimita(const unsigned char buffer[], size_t length) {
    stare.set(CONFIGURING);
    nfc.save_new_key(buffer, length); // save received key
 }
 
-void Dispozitiv::configurare_terminata(void) {
+void Dispozitiv::configurareTerminata(void) {
    stare.set(RUNNING);
 }

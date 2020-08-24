@@ -12,7 +12,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "c:/Users/Gabi/casa-inteligenta/modules/nfc/.pio/build/d1mini/firmware.elf",
+            "executable": "c:/Users/Gabi/Desktop/NFC/.pio/build/d1mini/firmware.elf",
             "toolchainBinDir": "C:/Users/Gabi/.platformio/packages/toolchain-xtensa/bin",
             "preLaunchTask": {
                 "type": "PlatformIO",
@@ -24,7 +24,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "c:/Users/Gabi/casa-inteligenta/modules/nfc/.pio/build/d1mini/firmware.elf",
+            "executable": "c:/Users/Gabi/Desktop/NFC/.pio/build/d1mini/firmware.elf",
             "toolchainBinDir": "C:/Users/Gabi/.platformio/packages/toolchain-xtensa/bin",
             "internalConsoleOptions": "openOnSessionStart"
         }

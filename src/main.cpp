@@ -1,12 +1,7 @@
 #include <Arduino.h>
 
-#ifdef ARDUINO_AVR_UNO
-   #include "BlynkSimpleStream.h"
-#endif
-#ifdef ARDUINO_ESP8266_WEMOS_D1MINILITE
-   #define BLYNK_PRINT Serial
-   #include <BlynkSimpleEsp8266.h>
-#endif
+#define BLYNK_PRINT Serial
+#include <BlynkSimpleEsp8266.h>
 
 #include "debug.h"
 #include "initializare.h"

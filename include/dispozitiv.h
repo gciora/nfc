@@ -9,9 +9,9 @@ class Dispozitiv {
         void begin(void);
         void run(void);
         bool isRunning(void);
-        void configurareNePrimita(void);
-        void primitConfigurare(const unsigned char buffer[], size_t length);
-        void configurare_terminata(void);
+        void configurareNeprimita(void);
+        void configurarePrimita(const unsigned char buffer[], size_t length);
+        void configurareTerminata(void);
     private:
         StareSystem stare;
 };

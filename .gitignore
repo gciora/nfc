@@ -4,4 +4,4 @@
 .vscode/launch.json
 .vscode/ipch
 
-**/secrete.cpp
+**/secret.cpp

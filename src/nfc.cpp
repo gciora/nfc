@@ -45,7 +45,7 @@ void NFC::run(void) { // IDLE running on timer
         config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_SCHIMBARE_CHEIE_SI_IDLE);
         break;
       case ZAVOR_DESCHIS:
-        digitalWrite(PIN_ZAVOR,HIGH);
+        digitalWrite(PIN_ZAVOR,LOW);
         blynk_timer.setTimer(zavor_config_timeout, timeout_zavor, 1);
         acces_permis = false;
         config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
@@ -182,7 +182,7 @@ bool NFC::save_new_key(const unsigned char buffer[], size_t length) {
     }
     DEBUG_PRINTLN("");
     received_new_key = true; // Cheie adaugat cu succes
-    dispozitiv.configurare_terminata();
+    dispozitiv.configurareTerminata();
   } else {
     DEBUG_PRINTLN("Cheia nu este corecta");
     received_new_key = false;

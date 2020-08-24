@@ -2,23 +2,8 @@
 #define SETARI_CONFIG_FILE
 
 #include <MFRC522.h>
-
-#ifdef ARDUINO_AVR_UNO
-    #include "BlynkSimpleStream.h"
-#endif
-
-#ifdef ARDUINO_ESP8266_WEMOS_D1MINILITE
-    #include <BlynkSimpleEsp8266.h>
-#endif
-
-#include "secrete.h"
-
-#define NFC_FW_VER "1.0"
-#define NFC_HW_VER "1.0"
-#define NFC_SHIELD "PN532"
-
-#define BOARD_NAME "Authorizer Reader"
-#define BOARD_VENDOR "Raspberry Pi"
+#include <BlynkSimpleEsp8266.h>
+#include "secret.h"
 
 #define APP_DEBUG
 
@@ -47,16 +32,12 @@ constexpr unsigned long TIMEOUT_INTRE_SCHIMBARE_CHEIE_SI_IDLE = 4000L;
 
 
 // Dispozitiv
-#ifdef ARDUINO_AVR_UNO
-    constexpr byte PIN_ZAVOR = 2; // pin unde releul pentru zavor este conectat
-#endif
-#ifdef ARDUINO_ESP8266_WEMOS_D1MINILITE
-    constexpr byte PIN_ZAVOR = D4;
-    constexpr byte PIN_LED_BLUE = D0;
-#endif
+
+constexpr byte PIN_ZAVOR = D4;
+constexpr byte PIN_LED_BLUE = D0;
 
 // NFC settings
-constexpr byte BLOC_AUTENTIFICARE = 7; //3 acest bloc e folosit pentru verificarea autentificarii
+constexpr byte BLOC_AUTENTIFICARE = 7; //acest bloc e folosit pentru verificarea autentificarii
 
 enum ListaStariAuth {
     NOT_AUTH,
@@ -67,15 +48,8 @@ enum ListaStariAuth {
                             // for other defines
 };
 
-#ifdef ARDUINO_AVR_UNO
-    constexpr unsigned char RST_PIN = 9;
-    constexpr unsigned char SS_PIN  = 10;
-#endif
-
-#ifdef ARDUINO_ESP8266_WEMOS_D1MINILITE
-    constexpr unsigned char RST_PIN = D3;
-    constexpr unsigned char SS_PIN  = D8;
-#endif
+constexpr unsigned char RST_PIN = D3;
+constexpr unsigned char SS_PIN  = D8;
 
 constexpr unsigned char debug_serial_rx = 3;
 constexpr unsigned char debug_serial_tx = 4;

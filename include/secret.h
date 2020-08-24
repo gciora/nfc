@@ -1,5 +1,5 @@
-#ifndef SECRETE_CONFIG_FILE
-#define SECRETE_CONFIG_FILE
+#ifndef SECRET_CONFIG_FILE
+#define SECRET_CONFIG_FILE
 
 // Blynk
 extern char blynk_auth[];

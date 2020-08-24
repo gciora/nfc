@@ -6,8 +6,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "c:/Users/Gabi/casa-inteligenta/modules/nfc/include",
-                "c:/Users/Gabi/casa-inteligenta/modules/nfc/src",
+                "c:/Users/Gabi/Desktop/NFC/include",
+                "c:/Users/Gabi/Desktop/NFC/src",
                 "C:/Users/Gabi/.platformio/lib/MFRC522_ID63/src",
                 "C:/Users/Gabi/.platformio/packages/framework-arduinoespressif8266/libraries/SPI",
                 "C:/Users/Gabi/.platformio/packages/framework-arduinoespressif8266/libraries/SoftwareSerial/src",
@@ -50,8 +50,8 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "c:/Users/Gabi/casa-inteligenta/modules/nfc/include",
-                    "c:/Users/Gabi/casa-inteligenta/modules/nfc/src",
+                    "c:/Users/Gabi/Desktop/NFC/include",
+                    "c:/Users/Gabi/Desktop/NFC/src",
                     "C:/Users/Gabi/.platformio/lib/MFRC522_ID63/src",
                     "C:/Users/Gabi/.platformio/packages/framework-arduinoespressif8266/libraries/SPI",
                     "C:/Users/Gabi/.platformio/packages/framework-arduinoespressif8266/libraries/SoftwareSerial/src",
