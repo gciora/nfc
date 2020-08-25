@@ -1,10 +1,10 @@
 #include <Arduino.h>
 
-#define BLYNK_PRINT Serial
 #include <BlynkSimpleEsp8266.h>
-
 #include "debug.h"
 #include "initializare.h"
+
+#define BLYNK_PRINT Serial
 
 BLYNK_CONNECTED() 
 {

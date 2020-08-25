@@ -27,44 +27,44 @@ void NFC::run(void)
 { 
   // IDLE running on timer
   ListaStariNfc stare_curenta = stare.get();
-    switch(stare_curenta) 
-    {
-      case IDLE:
-        if(verifica_card_nou()) stare.set(CARD_NOU);
-        break;
-      case CARD_NOU:
-        if(autentificare()) 
-          stare.set(AUTENTIFICAT);
-        else 
-          {
-            config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
-          }
-        break;
-      case AUTENTIFICAT:
-        if(update_key) stare.set(SCRIERE_CHEIE);
-        else
+  switch(stare_curenta) 
+  {
+    case IDLE:
+      if(verifica_card_nou()) stare.set(CARD_NOU);
+      break;
+    case CARD_NOU:
+      if(autentificare()) 
+        stare.set(AUTENTIFICAT);
+      else 
         {
-          if(acces_permis) stare.set(ZAVOR_DESCHIS);
-          else config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
+          config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
         }
         break;
-      case SCRIERE_CHEIE:
-        digitalWrite(PIN_LED_BLUE,LOW);
-        update_key_on_card();
-        config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_SCHIMBARE_CHEIE_SI_IDLE);
-        break;
-      case ZAVOR_DESCHIS:
-        digitalWrite(PIN_ZAVOR,LOW);
-        blynk_timer.setTimer(zavor_config_timeout, timeout_zavor, 1);
-        acces_permis = false;
-        config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
-        break;
-      case ASTEPTARE:
-        DEBUG_PRINTLN("Asteptam sa ne intoarcem la idle");
-      case NFC_ERROR:
-        reinit();
-        break;
-    }
+    case AUTENTIFICAT:
+      if(update_key) stare.set(SCRIERE_CHEIE);
+      else
+      {
+        if(acces_permis) stare.set(ZAVOR_DESCHIS);
+        else config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
+      }
+      break;
+    case SCRIERE_CHEIE:
+      digitalWrite(PIN_LED_BLUE,LOW);
+      update_key_on_card();
+      config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_SCHIMBARE_CHEIE_SI_IDLE);
+      break;
+    case ZAVOR_DESCHIS:
+      digitalWrite(PIN_ZAVOR,LOW);
+      blynk_timer.setTimer(zavor_config_timeout, timeout_zavor, 1);
+      acces_permis = false;
+      config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
+      break;
+    case ASTEPTARE:
+      DEBUG_PRINTLN("Asteptam sa ne intoarcem la idle");
+    case NFC_ERROR:
+      reinit();
+      break;
+  }
 }
 
 bool NFC::autentificare(void) 

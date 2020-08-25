@@ -1,5 +1,5 @@
 #ifndef DEBUG_CONFIG_FILE
-#define DEBUG_CONFIG_FILE
+   #define DEBUG_CONFIG_FILE
 
    #include "setari.h"
 

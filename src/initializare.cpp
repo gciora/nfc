@@ -1,14 +1,14 @@
 #include "debug.h"
 #include "initializare.h"
-
 #include <SoftwareSerial.h>
 #include <Blynk/BlynkTimer.h>
 #include <Blynk/BlynkApi.h>
 
 // Variables - Objects Declaration
 Initializare deviceInitializare;
+
 #if defined(APP_DEBUG)
-SoftwareSerial debug_serial(debug_serial_rx,debug_serial_tx);
+   SoftwareSerial debug_serial(debug_serial_rx,debug_serial_tx);
 #endif
 
 BlynkTimer blynk_timer;
@@ -63,7 +63,9 @@ void nfc_timer(void)
       nfc.run();
 }
 
-void timeout_config(void) { // timer pentru a astepta cheia secreta
+void timeout_config(void) 
+{ 
+   // timer pentru a astepta cheia secreta
                            // configuration from server, so run with default config
    if( nfc.cheie_noua_primita() ) 
    {
