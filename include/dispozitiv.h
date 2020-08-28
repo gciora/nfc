@@ -4,7 +4,7 @@
     #include "stari-mgmt.h"
     #include "nfc.h"
 
-    class Dispozitiv 
+class Dispozitiv
     {
         public:
             void begin(void);
@@ -14,7 +14,7 @@
             void configurarePrimita(const unsigned char buffer[], size_t length);
             void configurareTerminata(void);
         private:
-            StareSystem stare;
+            StareDispozitiv stare;
     };
 
     extern Dispozitiv dispozitiv;

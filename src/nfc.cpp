@@ -19,48 +19,49 @@ void NFC::begin()
 {
   SPI.begin();
   mfrc522.PCD_Init(SS_PIN, RST_PIN);
+  mfrc522.PCD_SetAntennaGain(0x50);
   // Initializare machina de stari
-  stare.set(IDLE);
+  stare.set(VEGHE);
 }
 
 void NFC::run(void) 
 { 
-  // IDLE running on timer
+  // VEGHE running on timer
   ListaStariNfc stare_curenta = stare.get();
   switch(stare_curenta) 
   {
-    case IDLE:
-      if(verifica_card_nou()) stare.set(CARD_NOU);
+    case VEGHE:
+      if(apare_card()) stare.set(CARD_NOU);
       break;
     case CARD_NOU:
       if(autentificare()) 
         stare.set(AUTENTIFICAT);
       else 
         {
-          config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
+          config_intarziere_intoarcere_la_VEGHE(TIMEOUT_INTRE_AUTENTIFICAT_SI_VEGHE);
         }
         break;
     case AUTENTIFICAT:
-      if(update_key) stare.set(SCRIERE_CHEIE);
+      if(cheie_schimbata) stare.set(SCHIMBARE_CHEIE);
       else
       {
         if(acces_permis) stare.set(ZAVOR_DESCHIS);
-        else config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
+        else config_intarziere_intoarcere_la_VEGHE(TIMEOUT_INTRE_AUTENTIFICAT_SI_VEGHE);
       }
       break;
-    case SCRIERE_CHEIE:
+    case SCHIMBARE_CHEIE:
       digitalWrite(PIN_LED_BLUE,LOW);
-      update_key_on_card();
-      config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_SCHIMBARE_CHEIE_SI_IDLE);
+      schimbare_cheie();
+      config_intarziere_intoarcere_la_VEGHE(TIMEOUT_INTRE_SCHIMBARE_CHEIE_SI_VEGHE);
       break;
     case ZAVOR_DESCHIS:
-      digitalWrite(PIN_ZAVOR,LOW);
+      digitalWrite(PIN_ZAVOR,HIGH);
       blynk_timer.setTimer(zavor_config_timeout, timeout_zavor, 1);
       acces_permis = false;
-      config_intarziere_intoarcere_la_idle(TIMEOUT_INTRE_AUTENTIFICARE_SI_IDLE);
+      config_intarziere_intoarcere_la_VEGHE(TIMEOUT_INTRE_AUTENTIFICAT_SI_VEGHE);
       break;
     case ASTEPTARE:
-      DEBUG_PRINTLN("Asteptam sa ne intoarcem la idle");
+      DEBUG_PRINTLN("Asteptam sa ne intoarcem la VEGHE");
     case NFC_ERROR:
       reinit();
       break;
@@ -70,24 +71,24 @@ void NFC::run(void)
 bool NFC::autentificare(void) 
 {
   bool autentificat = false;
-  if(received_new_key) 
+  if(primire_cheie_noua) 
   { 
-    // cheia noua, sigura, a fost receptionata
-    // incercam autentificarea cu cheia noua (sigura)
+    // cheia noua, secretă, a fost receptionata
+    // incercam autentificarea cu cheia noua (secreta)
     // primita de la aplicatie si salvata in membrul clasei
     // cu numele "key"
-    if( authenticate_card(READ_KEYA, key, BLOC_AUTENTIFICARE) ) 
+    if( autentificare_card(READ_KEYA, key, BLOC_AUTENTIFICARE) ) 
     {
       autentificat = true;
       acces_permis = true;
-      DEBUG_PRINTLN("Ne-am autentificat cu cheia sigura");
+      DEBUG_PRINTLN("Ne-am autentificat cu cheia secretă");
       DEBUG_PRINTLN("Accesul este permis");
-      Blynk.virtualWrite(CHN_AUTH,NEW_AUTH_KEY); // informam serverul ca autentificarea a fost reusita
+      Blynk.virtualWrite(CHN_AUTH,CHEIE_SECRETA); // informam serverul ca autentificarea a fost reusita
     } 
     else 
     {
-      detach_current_card(); // trebuie reinitializata comunicatia cu cardul pentru a incerca o cheie noua
-      if(! verifica_card_nou()) 
+      retragere_card(); // trebuie reinitializata comunicatia cu cardul pentru a incerca o cheie noua
+      if(! apare_card()) 
       { // dupa deconectare cardul trebuie sa se re-connecteze (se comporta ca un card nou)
         return autentificat; // daca acest card nu s-a reconectat, nu mai putem face nimic
       }
@@ -95,11 +96,11 @@ bool NFC::autentificare(void)
   }
   if(! autentificat) { // autentificarea cu cheia noua nu a fost posibila
     // incercam autentificarea cu cheia implicita din fabrica (nfc_default_key_a din setari.h)
-    if( authenticate_card(READ_KEYA, nfc_default_key_a, BLOC_AUTENTIFICARE) ) 
+    if( autentificare_card(READ_KEYA, nfc_default_key_a, BLOC_AUTENTIFICARE) ) 
     {
       autentificat = true;
       DEBUG_PRINTLN("Autentificat cu cheia din fabrica");
-      Blynk.virtualWrite(CHN_AUTH,DEFAULT_AUTH_KEY);
+      Blynk.virtualWrite(CHN_AUTH,CHEIE_FABRICA);
     } 
     else 
     {
@@ -110,13 +111,13 @@ bool NFC::autentificare(void)
   return autentificat;
 }
 
-void NFC::update_key_on_card(void) 
+void NFC::schimbare_cheie(void) 
 {
   int i = 0;
 
-  if(update_key) 
+  if(cheie_schimbata) 
   {
-    DEBUG_PRINT("Schibam cheia pe card cu: "); DEBUG_PRINTLN(key_to_update);
+    DEBUG_PRINT("Schimbam cheia pe card cu: "); DEBUG_PRINTLN(key_to_update);
 
     // configuram bitii de acces la card
     //card_data_buffer[6] = 0x80;
@@ -136,7 +137,7 @@ void NFC::update_key_on_card(void)
 
     switch (key_to_update) 
     {
-      case DEFAULT_AUTH_KEY:
+      case CHEIE_FABRICA:
         // punem noua cheie A
         for(i = 0; i < 6; i++) 
         {
@@ -148,7 +149,7 @@ void NFC::update_key_on_card(void)
         card_data_buffer[i] = nfc_default_key_b.keyByte[i];
         }
         break;
-      case NEW_AUTH_KEY:
+      case CHEIE_SECRETA:
         // punem noua cheie A
         for(i = 0; i < 6; i++) 
         {
@@ -171,7 +172,7 @@ void NFC::update_key_on_card(void)
   }
 }
 
-bool NFC::verifica_card_nou(void) 
+bool NFC::apare_card(void) 
 {
   bool result = false;
   if ( mfrc522.PICC_IsNewCardPresent()) 
@@ -179,17 +180,17 @@ bool NFC::verifica_card_nou(void)
     // Card nou detectat (sau redetectat in timpul unei autentificari)
     if ( mfrc522.PICC_ReadCardSerial()) 
     { 
-      // Numar serial card cititi cu succes
+      // Numar serial card citit cu succes
       //Blynk.virtualWrite(CHN_CARD_UID, blynk_buffer, mfrc522.uid.size >> 1);
-      if( is_valid_card_type() ) 
+      if( validare_card() ) 
       { 
         // verifica daca avem un card pe care stim sa-l procesam
-        Blynk.virtualWrite(CHN_VALID_CARD,1); // inform server CARD is VALID
+        Blynk.virtualWrite(CHN_CARD_VALID,1); // inform server CARD is VALID
         result = true;
       } 
       else 
       {
-        Blynk.virtualWrite(CHN_VALID_CARD,0); // inform server CARD is NON-VALID
+        Blynk.virtualWrite(CHN_CARD_VALID,0); // inform server CARD is NON-VALID
         result = false;
       } 
     }
@@ -199,13 +200,13 @@ bool NFC::verifica_card_nou(void)
 
 void NFC::set_key_to_update(byte auth) 
 {
-  key_to_update = (ListaStariAuth) auth;
+  key_to_update = (ListaStariAutentificare) auth;
   DEBUG_PRINT("Cheie pe care o schimbam pe card: "); DEBUG_PRINTLN(auth);
 }
 
 void NFC::set_permite_update_cheie(byte updatam) 
 {
-  update_key = (1 == updatam);
+  cheie_schimbata = (1 == updatam);
   DEBUG_PRINT("Updatam cheie: "); DEBUG_PRINTLN(updatam);
 }
 
@@ -222,18 +223,18 @@ bool NFC::save_new_key(const unsigned char buffer[], size_t length)
       DEBUG_PRINT(":");
     }
     DEBUG_PRINTLN("");
-    received_new_key = true; // Cheie adaugat cu succes
+    primire_cheie_noua = true; // Cheie adaugat cu succes
     dispozitiv.configurareTerminata();
   } 
   else 
   {
     DEBUG_PRINTLN("Cheia nu este corecta");
-    received_new_key = false;
+    primire_cheie_noua = false;
   }
-  return received_new_key;
+  return primire_cheie_noua;
 }
 
-bool NFC::authenticate_card(const enum MFRC522::PICC_Command key_type, MFRC522::MIFARE_Key key, byte block) { //
+bool NFC::autentificare_card(const enum MFRC522::PICC_Command key_type, MFRC522::MIFARE_Key key, byte block) { //
   MFRC522::StatusCode status;
   byte i;
 
@@ -300,7 +301,7 @@ bool NFC::write_block(byte block_number, byte buffer[16])
   return false;
 }
 
-bool NFC::is_valid_card_type() 
+bool NFC::validare_card() 
 {
   MFRC522::PICC_Type piccType = mfrc522.PICC_GetType(mfrc522.uid.sak);
   DEBUG_PRINT("Tip PICC (Card): ");
@@ -317,7 +318,7 @@ bool NFC::is_valid_card_type()
   return true;
 }
 
-void NFC::detach_current_card(void) 
+void NFC::retragere_card(void) 
 {
   MFRC522::StatusCode result;
   result = mfrc522.PICC_HaltA();
@@ -329,39 +330,39 @@ void NFC::detach_current_card(void)
   mfrc522.PCD_Init(SS_PIN, RST_PIN);
 }
 
-void timeout_intoarcere_la_idle(void) 
+void timeout_intoarcere_la_VEGHE(void) 
 { 
   // apelata de timer ca sa activeze functionalitatea
-   nfc.configureaza_idle();
+   nfc.intrare_stare_VEGHE();
 }
 
-void NFC::config_intarziere_intoarcere_la_idle(const unsigned long mili_secunde) 
+void NFC::config_intarziere_intoarcere_la_VEGHE(const unsigned long mili_secunde) 
 {
   acces_permis = false;
-  detach_current_card();
-  if(SCRIERE_CHEIE == stare.get()) 
+  retragere_card();
+  if(SCHIMBARE_CHEIE == stare.get()) 
   {
     digitalWrite(PIN_LED_BLUE,HIGH);
   }
   stare.set(ASTEPTARE);
-  blynk_timer.setTimer(mili_secunde, timeout_intoarcere_la_idle, 1);
+  blynk_timer.setTimer(mili_secunde, timeout_intoarcere_la_VEGHE, 1);
   DEBUG_PRINT("Asteapta pentru o noua operatie: "); DEBUG_PRINTLN(mili_secunde);
 }
 
-void NFC::configureaza_idle(void) 
+void NFC::intrare_stare_VEGHE(void) 
 {
-  stare.set(IDLE);
-  DEBUG_PRINTLN("Inapoi la IDLE");
+  stare.set(VEGHE);
+  DEBUG_PRINTLN("Inapoi la VEGHE");
 }
 
 void NFC::read_data(void) 
 {
-  stare.set(IDLE);
-  detach_current_card();
+  stare.set(VEGHE);
+  retragere_card();
 }
 void NFC::write_data(void) 
 {
-  stare.set(IDLE);
+  stare.set(VEGHE);
 }
 void NFC::reinit(void) 
 {
@@ -449,7 +450,7 @@ unsigned char NFC::byte_to_HEX_string(byte byte_number)
 
 bool NFC::cheie_noua_primita(void) 
 {
-  return received_new_key;
+  return primire_cheie_noua;
 }
 
 //byte = PCD_GetAntennaGain();

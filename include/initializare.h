@@ -12,12 +12,12 @@
          void begin(void);  // configure everything and start processes
    };
 
-   extern Initializare deviceInitializare;
+   extern Initializare dispozitivInitializare;
    extern BlynkTimer blynk_timer;
    extern char blynk_buffer[];
 
    // Time related functions
-   void system_timer(void);
+   void dispozitiv_timer(void);
    void nfc_timer(void);
    void timeout_config(void);
    void timeout_zavor(void);

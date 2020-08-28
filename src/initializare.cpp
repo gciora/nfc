@@ -5,7 +5,7 @@
 #include <Blynk/BlynkApi.h>
 
 // Variables - Objects Declaration
-Initializare deviceInitializare;
+Initializare dispozitivInitializare;
 
 #if defined(APP_DEBUG)
    SoftwareSerial debug_serial(debug_serial_rx,debug_serial_tx);
@@ -31,7 +31,7 @@ void Initializare::begin()
 
    // initializare pin zavor
    pinMode(PIN_ZAVOR,OUTPUT);
-   digitalWrite(PIN_ZAVOR, HIGH); // zavor inchis initial
+   digitalWrite(PIN_ZAVOR, LOW); // zavor inchis initial
 
    // initializare LED scriere cheie
    pinMode(PIN_LED_BLUE,OUTPUT);
@@ -44,12 +44,12 @@ void Initializare::begin()
    nfc.begin();  
 
    // configurare timere folosite
-   blynk_timer.setInterval(system_timer_interval, system_timer);
+   blynk_timer.setInterval(dispozitiv_timer_interval, dispozitiv_timer);
    blynk_timer.setInterval(nfc_timer_interval, nfc_timer);
    blynk_timer.setTimer(blynk_config_timeout, timeout_config, 1);
 }
 
-void system_timer(void) 
+void dispozitiv_timer(void) 
 { 
    // masina stari sistem (dispozitiv) e executata pe acest timer
    dispozitiv.run();
@@ -82,23 +82,23 @@ void timeout_config(void)
 void timeout_zavor(void) 
 { 
    // timer ca sa inchida zavorul dupa un interval prestabilit
-   digitalWrite(PIN_ZAVOR, HIGH);
+   digitalWrite(PIN_ZAVOR, LOW);
    //DEBUG_PRINTLN("Activare zavor");
 }
 
-BLYNK_WRITE(CHN_SECURE_KEY) 
+BLYNK_WRITE(CHN_CHEIE_SECRETA) 
 { 
-   // Receptie cheie sigura de la aplicatie
+   // Receptie cheie secretă de la aplicatie
    //DEBUG_PRINT("Cheie noua primita (HEX): "); DEBUG_PRINTLN(param.asStr() );
    dispozitiv.configurarePrimita((const unsigned char *)param.getBuffer(), param.getLength());
 }
 
-BLYNK_WRITE(CHN_UPDATE_OR_NO_KEY) 
+BLYNK_WRITE(CHN_OPTIUNE_SCHIMBARE_STARI_SYSTEM) 
 {
    nfc.set_permite_update_cheie(param.asInt());
 }
 
-BLYNK_WRITE(CHN_CONFIG_KEY_TO_UPDATE) 
+BLYNK_WRITE(CHN_CHEIE_DE_SCHIMBAT) 
 {
    nfc.set_key_to_update(param.asInt());
 }
@@ -109,7 +109,7 @@ BLYNK_WRITE(CHN_ZAVOR)
    if( 1 == zavor ) 
    {
       DEBUG_PRINTLN("Deschid zavor");
-      digitalWrite(PIN_ZAVOR, LOW);
+      digitalWrite(PIN_ZAVOR, HIGH);
       blynk_timer.setTimer(zavor_config_timeout, timeout_zavor, 1);
    }
 }

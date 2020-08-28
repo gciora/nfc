@@ -4,34 +4,32 @@
     #include <string.h>
 
     #include "debug.h"
-    enum ListaStariSystem 
+    enum ListaStariDispozitiv 
     {
         WAIT_CONFIG,
-        CONFIGURING,
+        INITIAL_CONFIG,
         RUNNING,
         RESET_CONFIG,
         SYSTEM_ERROR,
 
-        MAX_SYSTEM_CONFIG_VALUE // keep this entry the last one to use as "length" of enum
-                                // for other defines
+        NUMAR_STARI_DISPOZITIV //retine nr.de stari 
     };
 
     enum ListaStariNfc 
     {
-        IDLE,          // verifica regulat daca exista card nou (polling)
+        VEGHE,          // verifica regulat daca exista card nou (polling)
         CARD_NOU,      // un nou card a fost detectat
         AUTENTIFICAT,  // noul card a fost autentificat cu una dintre chei
         ZAVOR_DESCHIS, // am actionat zavorul, si asteptam timeout zavor
-        SCRIERE_CHEIE, // scriem o cheie diferita pe card
-        ASTEPTARE,     // Asteptam sa ne intoarcem la idle
+        SCHIMBARE_CHEIE, // scriem o cheie diferita pe card
+        ASTEPTARE,     // Asteptam sa ne intoarcem la VEGHE
         NFC_ERROR,     // nfc working error
 
-        MAX_NFC_CONFIG_VALUE // keep this entry the last one to use as "length" of enum
-                             // for other defines
+        NUMAR_STARI_NFC //retine nr.de stari
     };
 
     #if defined(APP_DEBUG)
-        extern const char* StareSystemStr[];
+        extern const char* StareDispozitivStr[];
         extern const char* StareNfcStr[];
     #endif
 
@@ -58,13 +56,13 @@
             }   
     };
 
-    class StareSystem: public Stare<ListaStariSystem> 
+    class StareDispozitiv: public Stare<ListaStariDispozitiv> 
     {
         public:
             #if defined(APP_DEBUG)
-                StareSystem(void) 
+                StareDispozitiv(void) 
                 {
-                    StareStr = StareSystemStr;
+                    StareStr = StareDispozitivStr;
                 }
             #endif
     };

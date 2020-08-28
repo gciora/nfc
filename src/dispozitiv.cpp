@@ -15,8 +15,8 @@ void Dispozitiv::run(void)
       case WAIT_CONFIG:
          //DEBUG_PRINTLN("Astept Configurare");
          break;
-      case CONFIGURING:
-         stare.set(CONFIGURING);
+      case INITIAL_CONFIG:
+         stare.set(INITIAL_CONFIG);
          break;
       case RUNNING:
          break;
@@ -43,7 +43,7 @@ void Dispozitiv::configurareNeprimita(void)
 
 void Dispozitiv::configurarePrimita(const unsigned char buffer[], size_t length) 
 {
-   stare.set(CONFIGURING);
+   stare.set(INITIAL_CONFIG);
    nfc.save_new_key(buffer, length); // save received key
 }
 

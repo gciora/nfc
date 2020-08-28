@@ -13,7 +13,7 @@ BLYNK_CONNECTED()
 
 void setup() 
 {
-   deviceInitializare.begin();
+   dispozitivInitializare.begin();
 }
 
 void loop() 
