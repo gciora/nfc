@@ -23,7 +23,7 @@
     constexpr unsigned long TIMEOUT_INTRE_SCHIMBARE_CHEIE_SI_VEGHE = 4000L;
 
     #define CHN_CHEIE_SECRETA                      V0 // canal pentru receptie cheie secretă de la server Blynk
-    #define CHN_OPTIUNE_SCHIMBARE_STARI_DISPOZITIV V1 // canal pentru receptie daca sa updatam cheia de pe card sau nu (1/0)
+    #define CHN_OPTIUNE_SCHIMBARE_CHEIE V1 // canal pentru receptie daca sa updatam cheia de pe card sau nu (1/0)
     #define CHN_CHEIE_DE_SCHIMBAT                  V2 // canal pentru receptie care cheie sa o punem pe card (1/2 = cheie fabrica/cheie secretă)
     #define CHN_ZAVOR                              V3 // canal pentru receptie deschiderea manuala a zavorului
 

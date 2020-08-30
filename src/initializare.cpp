@@ -86,7 +86,7 @@ BLYNK_WRITE(CHN_CHEIE_SECRETA)
    dispozitiv.configurarePrimita((const unsigned char *)param.getBuffer(), param.getLength());
 }
 
-BLYNK_WRITE(CHN_OPTIUNE_SCHIMBARE_STARI_DISPOZITIV) 
+BLYNK_WRITE(CHN_OPTIUNE_SCHIMBARE_CHEIE) 
 {
    nfc.set_permite_update_cheie(param.asInt());
 }
