@@ -4,26 +4,20 @@
 #include <Blynk/BlynkTimer.h>
 #include <Blynk/BlynkApi.h>
 
-// Variables - Objects Declaration
+// Variable-Obiect
 Initializare dispozitivInitializare;
-
-#if defined(APP_DEBUG)
-   SoftwareSerial debug_serial(debug_serial_rx,debug_serial_tx);
-#endif
-
 BlynkTimer blynk_timer;
 char blynk_buffer[20];
 
-// Class Functions - Methods
+
+// Clasa Initializare
 void Initializare::begin() 
 {
 
    #ifdef APP_DEBUG
       Serial.begin(blynk_serial_speed); // seriala hard folosita pentru debug (prin usb - serial monitor)
       #define BLYNK_PRINT Serial
-      //DEBUG_PRINT("Hardware v "); DEBUG_PRINTLN( String(NFC_FW_VER).c_str() );
-      //DEBUG_PRINT("Firmware v "); DEBUG_PRINTLN( String(NFC_HW_VER).c_str() );
-      //DEBUG_PRINT("NFC Shield "); DEBUG_PRINTLN( String(NFC_SHIELD).c_str() );
+      DEBUG_PRINTLN("             SALUT!");
    #endif
 
    Blynk.begin(blynk_auth, ssid, pass); // WiFi folosit in comunicare cu serverul Blynk
@@ -49,58 +43,57 @@ void Initializare::begin()
    blynk_timer.setTimer(blynk_config_timeout, timeout_config, 1);
 }
 
+
+// Functii pentru timere
 void dispozitiv_timer(void) 
 { 
-   // masina stari sistem (dispozitiv) e executata pe acest timer
+   // masina stari dispozitiv e executata pe acest timer
    dispozitiv.run();
 }
 
 void nfc_timer(void) 
 { 
    // masina stari nfc e executata pe acest timer
-   // Blynk.virtualWrite(V5, millis() / 1000);
    if(dispozitiv.isRunning())
       nfc.run();
 }
 
 void timeout_config(void) 
 { 
-   // timer pentru a astepta cheia secreta
-                           // configuration from server, so run with default config
-   if( nfc.cheie_noua_primita() ) 
+   // functia pentru timer primire initiala cheie secreta (10s)
+     if( nfc.cheie_secreta_primita() ) 
    {
       //DEBUG_PRINTLN("Timeout terminat cu succes - cheie secreta receptionata")
    } 
    else 
    {
       //DEBUG_PRINTLN("Cheie secreta nereceptionata");
-      //DEBUG_PRINTLN("Folosim cheie din repository");
       dispozitiv.configurareNeprimita();
    }
 }
 
 void timeout_zavor(void) 
 { 
-   // timer ca sa inchida zavorul dupa un interval prestabilit
+   // functia pentru timer-zavor (5s)
    digitalWrite(PIN_ZAVOR, LOW);
    //DEBUG_PRINTLN("Activare zavor");
 }
 
+
+// Receptionare informatii de la serverul Blynk
 BLYNK_WRITE(CHN_CHEIE_SECRETA) 
 { 
-   // Receptie cheie secretă de la aplicatie
-   //DEBUG_PRINT("Cheie noua primita (HEX): "); DEBUG_PRINTLN(param.asStr() );
    dispozitiv.configurarePrimita((const unsigned char *)param.getBuffer(), param.getLength());
 }
 
-BLYNK_WRITE(CHN_OPTIUNE_SCHIMBARE_STARI_SYSTEM) 
+BLYNK_WRITE(CHN_OPTIUNE_SCHIMBARE_STARI_DISPOZITIV) 
 {
    nfc.set_permite_update_cheie(param.asInt());
 }
 
 BLYNK_WRITE(CHN_CHEIE_DE_SCHIMBAT) 
 {
-   nfc.set_key_to_update(param.asInt());
+   nfc.set_cheie_de_schimbat(param.asInt());
 }
 
 BLYNK_WRITE(CHN_ZAVOR) 

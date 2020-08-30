@@ -4,13 +4,12 @@
     #include <string.h>
 
     #include "debug.h"
+
     enum ListaStariDispozitiv 
     {
-        WAIT_CONFIG,
+        ASTEPT_CONFIG,
         INITIAL_CONFIG,
         RUNNING,
-        RESET_CONFIG,
-        SYSTEM_ERROR,
 
         NUMAR_STARI_DISPOZITIV //retine nr.de stari 
     };
@@ -23,17 +22,27 @@
         ZAVOR_DESCHIS, // am actionat zavorul, si asteptam timeout zavor
         SCHIMBARE_CHEIE, // scriem o cheie diferita pe card
         ASTEPTARE,     // Asteptam sa ne intoarcem la VEGHE
-        NFC_ERROR,     // nfc working error
 
         NUMAR_STARI_NFC //retine nr.de stari
     };
 
-    #if defined(APP_DEBUG)
+     enum ListaStariAutentificare 
+    {
+        NEAUTENTIFICAT,
+        CHEIE_FABRICA,
+        CHEIE_SECRETA,
+
+        NUMAR_STARI_AUTENTIFICARE //retine nr.de stari
+    };
+
+
+   #if defined(APP_DEBUG)
         extern const char* StareDispozitivStr[];
         extern const char* StareNfcStr[];
     #endif
+  
 
-    template <typename T>
+   template <typename T>
     class Stare 
     {
         protected:
@@ -56,6 +65,7 @@
             }   
     };
 
+
     class StareDispozitiv: public Stare<ListaStariDispozitiv> 
     {
         public:
@@ -67,6 +77,7 @@
             #endif
     };
 
+
     class StareNfc: public Stare<ListaStariNfc> 
     {
         public:
@@ -77,5 +88,6 @@
                 }
             #endif
     };
+
 
 #endif  // STARI_MGMT_CONFIG_FILE

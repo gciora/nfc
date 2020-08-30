@@ -16,7 +16,7 @@
    extern BlynkTimer blynk_timer;
    extern char blynk_buffer[];
 
-   // Time related functions
+   // Functii pentru timere
    void dispozitiv_timer(void);
    void nfc_timer(void);
    void timeout_config(void);

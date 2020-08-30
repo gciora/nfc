@@ -13,43 +13,34 @@
   class NFC 
   {
     public:
-      NFC();                         // constructor to initialize internal "key" with 0x00
-      void begin();                  // initialize nfc module
-      void run(void);                // VEGHE loop processing - named "run" for consistency
+      NFC();                         // constructor pentru a initializa atributul "key" cu 0x00
+      void begin();                  // initializeaza modulul nfc
+      void run(void);                // implementeaza masina de stari pt. nfc 
 
       bool is_new_processing(void);  // check if this card we attempt to read it before or not
-      bool save_new_key(const unsigned char[], size_t); // store received key from Blynk in internal class
-                                     // attribute: "key"
-      void set_key_to_update(byte);  // save which key is going to be updated on the insecure card
+      bool save_new_key(const unsigned char[], size_t); // retine cheia primita de la Blynk in "key"
+      void set_cheie_de_schimbat(byte);  // care cheie se modifica
       void set_permite_update_cheie(byte);
 
-      bool cheie_noua_primita(void);
+      bool cheie_secreta_primita(void);
 
       void activare_functionalitate(void); // cat timp functionarea nu-i activa, nu ne putem autentifica
-      void intrare_stare_VEGHE(void); // schimba starea la VEGHE
+      void intrare_stare_veghe(void); // schimba starea la VEGHE
 
     private:
       bool apare_card(void);
       bool autentificare(void);
-      void schimbare_cheie(void); // changed key on the Mifare card with "new key"
-                                     // stored in "key" attribute
-      void read_data(void);          // read data from card
-      void write_data(void);         // write data to card
+      void schimbare_cheie(void); // schimba cheia pe card cu cea din "key"
+      void write_data(void);       // scriere pe card
       void retragere_card(void);
-      void reinit(void);             // 
-      void error(void);              // 
 
       bool autentificare_card(const enum MFRC522::PICC_Command, MFRC522::MIFARE_Key, byte);
-      void config_intarziere_intoarcere_la_VEGHE(const unsigned long);
-      bool read_block(byte block_number, byte buffer[18]);
+      void config_intarziere_intoarcere_la_veghe(const unsigned long);
       bool write_block(byte block_number, byte buffer[16]);
       bool validare_card();
-      bool change_uid(byte new_uid[4]);
 
       bool ascii_to_byte(const unsigned char *, byte, byte []);
       bool string_digit_to_byte(const char digit, byte *destination);
-      unsigned char byte_to_HEX_string(byte byte_number);
-      void hex_to_ascii(const unsigned char[], byte, char[]);
 
       MFRC522 mfrc522;
       StareNfc stare;
@@ -57,10 +48,10 @@
       MFRC522::MIFARE_Key key;
       bool primire_cheie_noua = false;
 
-      bool cheie_schimbata   = false;
+      bool schimb_cheie = false;
       bool acces_permis = false;
 
-      ListaStariAutentificare key_to_update;
+      ListaStariAutentificare cheie_de_schimbat;
 
       char uid[7];
       byte card_data_buffer[18]; // trebuie sa fie 18 ca sa poata citi libraria. Doar 16 sunt folositi

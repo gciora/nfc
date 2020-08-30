@@ -19,8 +19,9 @@ void NFC::begin()
 {
   SPI.begin();
   mfrc522.PCD_Init(SS_PIN, RST_PIN);
-  mfrc522.PCD_SetAntennaGain(0x50);
-  // Initializare machina de stari
+  mfrc522.PCD_SetAntennaGain(0x70);
+  
+  // Initializare masina de stari
   stare.set(VEGHE);
 }
 
@@ -38,33 +39,30 @@ void NFC::run(void)
         stare.set(AUTENTIFICAT);
       else 
         {
-          config_intarziere_intoarcere_la_VEGHE(TIMEOUT_INTRE_AUTENTIFICAT_SI_VEGHE);
+          config_intarziere_intoarcere_la_veghe(TIMEOUT_INTRE_AUTENTIFICAT_SI_VEGHE);
         }
         break;
     case AUTENTIFICAT:
-      if(cheie_schimbata) stare.set(SCHIMBARE_CHEIE);
+      if(schimb_cheie) stare.set(SCHIMBARE_CHEIE);
       else
       {
         if(acces_permis) stare.set(ZAVOR_DESCHIS);
-        else config_intarziere_intoarcere_la_VEGHE(TIMEOUT_INTRE_AUTENTIFICAT_SI_VEGHE);
+        else config_intarziere_intoarcere_la_veghe(TIMEOUT_INTRE_AUTENTIFICAT_SI_VEGHE);
       }
       break;
     case SCHIMBARE_CHEIE:
       digitalWrite(PIN_LED_BLUE,LOW);
       schimbare_cheie();
-      config_intarziere_intoarcere_la_VEGHE(TIMEOUT_INTRE_SCHIMBARE_CHEIE_SI_VEGHE);
+      config_intarziere_intoarcere_la_veghe(TIMEOUT_INTRE_SCHIMBARE_CHEIE_SI_VEGHE);
       break;
     case ZAVOR_DESCHIS:
       digitalWrite(PIN_ZAVOR,HIGH);
       blynk_timer.setTimer(zavor_config_timeout, timeout_zavor, 1);
       acces_permis = false;
-      config_intarziere_intoarcere_la_VEGHE(TIMEOUT_INTRE_AUTENTIFICAT_SI_VEGHE);
+      config_intarziere_intoarcere_la_veghe(TIMEOUT_INTRE_AUTENTIFICAT_SI_VEGHE);
       break;
     case ASTEPTARE:
       DEBUG_PRINTLN("Asteptam sa ne intoarcem la VEGHE");
-    case NFC_ERROR:
-      reinit();
-      break;
   }
 }
 
@@ -83,7 +81,7 @@ bool NFC::autentificare(void)
       acces_permis = true;
       DEBUG_PRINTLN("Ne-am autentificat cu cheia secretă");
       DEBUG_PRINTLN("Accesul este permis");
-      Blynk.virtualWrite(CHN_AUTH,CHEIE_SECRETA); // informam serverul ca autentificarea a fost reusita
+      Blynk.virtualWrite(CHN_AUTENTIFICARE,CHEIE_SECRETA); // informam serverul ca autentificarea a fost reusita
     } 
     else 
     {
@@ -100,7 +98,7 @@ bool NFC::autentificare(void)
     {
       autentificat = true;
       DEBUG_PRINTLN("Autentificat cu cheia din fabrica");
-      Blynk.virtualWrite(CHN_AUTH,CHEIE_FABRICA);
+      Blynk.virtualWrite(CHN_AUTENTIFICARE,CHEIE_FABRICA);
     } 
     else 
     {
@@ -115,9 +113,9 @@ void NFC::schimbare_cheie(void)
 {
   int i = 0;
 
-  if(cheie_schimbata) 
+  if(schimb_cheie) 
   {
-    DEBUG_PRINT("Schimbam cheia pe card cu: "); DEBUG_PRINTLN(key_to_update);
+    DEBUG_PRINT("Schimbam cheia pe card cu: "); DEBUG_PRINTLN(cheie_de_schimbat);
 
     // configuram bitii de acces la card
     //card_data_buffer[6] = 0x80;
@@ -125,17 +123,17 @@ void NFC::schimbare_cheie(void)
     //card_data_buffer[8] = 0xFF;
     
     mfrc522.MIFARE_SetAccessBits(
-      &(card_data_buffer[6]),/*adresa biti configurare securitatepentru sectorul curent(autentificat)*/
-      (byte)0b000,           /*biti acces bloc zero in ordinea C1 C2 C3 (C1 MSB)*/
-      (byte)0b000,           /*biti acces bloc unu in ordinea C1 C2 C3 (C1 MSB)*/
-      (byte)0b000,           /*biti acces bloc doi in ordinea C1 C2 C3 (C1 MSB)*/
-      (byte)0b000            /*biti acces bloc trei (sector trailer block) in ordinea C1 C2 C3 (C1 MSB)*/
+      &(card_data_buffer[6]),/*adresa biti configurare securitate pentru sectorul curent(autentificat)*/
+      (byte)0b000,           /*biti acces bloc zero*/
+      (byte)0b000,           /*biti acces bloc unu */
+      (byte)0b000,           /*biti acces bloc doi */
+      (byte)0b000            /*biti acces bloc trei */
     );
 
     // configuram byte-ul utilizator - in general nefolosit
     card_data_buffer[9] = 0xFF;
 
-    switch (key_to_update) 
+    switch (cheie_de_schimbat) 
     {
       case CHEIE_FABRICA:
         // punem noua cheie A
@@ -146,7 +144,7 @@ void NFC::schimbare_cheie(void)
         // punem noua cheie B
         for(i = 10; i < 16; i++) 
         {
-        card_data_buffer[i] = nfc_default_key_b.keyByte[i];
+        card_data_buffer[i] = nfc_default_key_b.keyByte[i-10];
         }
         break;
       case CHEIE_SECRETA:
@@ -158,7 +156,7 @@ void NFC::schimbare_cheie(void)
         // punem noua cheie B
         for(i = 10; i < 16; i++) 
         {
-          card_data_buffer[i] = key.keyByte[i];
+          card_data_buffer[i] = key.keyByte[i-10];
         }
         break;
     }
@@ -167,8 +165,6 @@ void NFC::schimbare_cheie(void)
     {
       DEBUG_PRINTLN("Cheie schimbata corect");
     }
-      //255:255:255:255:255:255:105:128:7:255:0:0:0:0:0:0:
-      //55:100:145:219:254:202:105:128:7:255:0:0:0:0:0:0:
   }
 }
 
@@ -185,7 +181,7 @@ bool NFC::apare_card(void)
       if( validare_card() ) 
       { 
         // verifica daca avem un card pe care stim sa-l procesam
-        Blynk.virtualWrite(CHN_CARD_VALID,1); // inform server CARD is VALID
+        Blynk.virtualWrite(CHN_CARD_VALID,1); // informam server CARD is VALID
         result = true;
       } 
       else 
@@ -198,15 +194,15 @@ bool NFC::apare_card(void)
   return result;
 }
 
-void NFC::set_key_to_update(byte auth) 
+void NFC::set_cheie_de_schimbat(byte auth) 
 {
-  key_to_update = (ListaStariAutentificare) auth;
+  cheie_de_schimbat = (ListaStariAutentificare) auth;
   DEBUG_PRINT("Cheie pe care o schimbam pe card: "); DEBUG_PRINTLN(auth);
 }
 
 void NFC::set_permite_update_cheie(byte updatam) 
 {
-  cheie_schimbata = (1 == updatam);
+  schimb_cheie = (1 == updatam);
   DEBUG_PRINT("Updatam cheie: "); DEBUG_PRINTLN(updatam);
 }
 
@@ -223,7 +219,7 @@ bool NFC::save_new_key(const unsigned char buffer[], size_t length)
       DEBUG_PRINT(":");
     }
     DEBUG_PRINTLN("");
-    primire_cheie_noua = true; // Cheie adaugat cu succes
+    primire_cheie_noua = true; // Cheie adaugata cu succes
     dispozitiv.configurareTerminata();
   } 
   else 
@@ -234,11 +230,12 @@ bool NFC::save_new_key(const unsigned char buffer[], size_t length)
   return primire_cheie_noua;
 }
 
-bool NFC::autentificare_card(const enum MFRC522::PICC_Command key_type, MFRC522::MIFARE_Key key, byte block) { //
+bool NFC::autentificare_card(const enum MFRC522::PICC_Command key_type, MFRC522::MIFARE_Key key, byte block) 
+{ //
   MFRC522::StatusCode status;
   byte i;
 
-  status = mfrc522.PCD_Authenticate(key_type, block, &key, &(mfrc522.uid)); //line 834 of MFRC522.cpp file
+  status = mfrc522.PCD_Authenticate(key_type, block, &key, &(mfrc522.uid));
   if (status == MFRC522::STATUS_OK) 
   {
     DEBUG_PRINT("Card autentificat: ");
@@ -263,24 +260,6 @@ bool NFC::autentificare_card(const enum MFRC522::PICC_Command key_type, MFRC522:
   return status == MFRC522::STATUS_OK;
 }
 
-bool NFC::read_block(byte block_number, byte buffer[18]) 
-{
-  MFRC522::StatusCode status;
-
-  byte len = 18;
-
-  status = mfrc522.MIFARE_Read(block_number, buffer, &len);
-  if (status == MFRC522::STATUS_OK) 
-  {
-    return true;
-  } 
-  else 
-  {
-    DEBUG_PRINT("Citire esuata: ");
-    DEBUG_PRINTLN(mfrc522.GetStatusCodeName(status));
-  }
-  return false;
-}
 
 bool NFC::write_block(byte block_number, byte buffer[16]) 
 {
@@ -327,16 +306,16 @@ void NFC::retragere_card(void)
     DEBUG_PRINTLN("Nu pot opri comunicatia cu cardul (HALT)");
   }
   mfrc522.PCD_StopCrypto1();
-  mfrc522.PCD_Init(SS_PIN, RST_PIN);
+  //mfrc522.PCD_Init(SS_PIN, RST_PIN);
 }
 
-void timeout_intoarcere_la_VEGHE(void) 
+void timeout_intoarcere_la_veghe(void) 
 { 
   // apelata de timer ca sa activeze functionalitatea
-   nfc.intrare_stare_VEGHE();
+   nfc.intrare_stare_veghe();
 }
 
-void NFC::config_intarziere_intoarcere_la_VEGHE(const unsigned long mili_secunde) 
+void NFC::config_intarziere_intoarcere_la_veghe(const unsigned long mili_secunde) 
 {
   acces_permis = false;
   retragere_card();
@@ -345,42 +324,19 @@ void NFC::config_intarziere_intoarcere_la_VEGHE(const unsigned long mili_secunde
     digitalWrite(PIN_LED_BLUE,HIGH);
   }
   stare.set(ASTEPTARE);
-  blynk_timer.setTimer(mili_secunde, timeout_intoarcere_la_VEGHE, 1);
+  blynk_timer.setTimer(mili_secunde, timeout_intoarcere_la_veghe, 1);
   DEBUG_PRINT("Asteapta pentru o noua operatie: "); DEBUG_PRINTLN(mili_secunde);
 }
 
-void NFC::intrare_stare_VEGHE(void) 
+void NFC::intrare_stare_veghe(void) 
 {
   stare.set(VEGHE);
   DEBUG_PRINTLN("Inapoi la VEGHE");
 }
 
-void NFC::read_data(void) 
-{
-  stare.set(VEGHE);
-  retragere_card();
-}
 void NFC::write_data(void) 
 {
   stare.set(VEGHE);
-}
-void NFC::reinit(void) 
-{
-  //TODO: reseteaza sistemul
-}
-void NFC::error(void) 
-{
-
-}
-
-bool NFC::change_uid(byte new_uid[4]) 
-{
-  if ( mfrc522.MIFARE_SetUid(new_uid, (byte)4, true) ) 
-  {
-    DEBUG_PRINTLN("Wrote new UID to card.");
-    return true;
-  }
-  return false;
 }
 
 bool NFC::ascii_to_byte(const unsigned char *ascii_string, byte size, byte result[]) 
@@ -409,6 +365,7 @@ bool NFC::ascii_to_byte(const unsigned char *ascii_string, byte size, byte resul
   }
   return conversion_result;
 }
+
 bool NFC::string_digit_to_byte(const char digit, byte *destination) 
 {
   // DEBUG_PRINT("Convertim Byte (HEX): "); DEBUG_PRINTLN( String(digit).c_str() );
@@ -430,32 +387,7 @@ bool NFC::string_digit_to_byte(const char digit, byte *destination)
   return false;
 }
 
-void NFC::hex_to_ascii(const unsigned char *hex_array, byte size, char *result) 
-{
-  byte src_index = 0, dst_index = 0;
-  for(src_index = 0; src_index < size; src_index ++ ) 
-  {
-    result[dst_index++] = byte_to_HEX_string(hex_array[src_index] >> 4);
-    result[dst_index++] = byte_to_HEX_string(hex_array[src_index]);
-  }
-  result[dst_index] = 0; // Terminator sir caractere
-  DEBUG_PRINT("HEX_STRING: "); DEBUG_PRINTLN(dst_index);
-}
-
-unsigned char NFC::byte_to_HEX_string(byte byte_number) 
-{
-  if((byte_number & 0x0F) < 10) return '0' + (byte_number & 0x0F);
-  return 'A' + (byte_number & 0x0F) - 10;
-}
-
-bool NFC::cheie_noua_primita(void) 
+bool NFC::cheie_secreta_primita(void) 
 {
   return primire_cheie_noua;
 }
-
-//byte = PCD_GetAntennaGain();
-//void PCD_SetAntennaGain(byte mask);
-//RxGain_18dB    RxGain_23dB    RxGain_18dB_2    RxGain_23dB_2    RxGain_33dB    RxGain_38dB    RxGain_43dB    RxGain_48dB    RxGain_min    RxGain_avg    RxGain_max
-//void PCD_AntennaOn();  void PCD_AntennaOff(); bool PCD_PerformSelfTest();void PCD_SoftPowerDown();  void PCD_SoftPowerUp();
-// void MIFARE_SetAccessBits(byte *accessBitBuffer, byte g0, byte g1, byte g2, byte g3);  bool MIFARE_OpenUidBackdoor(bool logErrors);
-// bool MIFARE_SetUid(byte *newUid, byte uidSize, bool logErrors);  bool MIFARE_UnbrickUidSector(bool logErrors);
